@@ -1,0 +1,4 @@
+{
+  "appName": { "message": "ProxySlack" },
+  "appDescription": { "message": "Switch HTTP, HTTPS, SOCKS4 and SOCKS5 proxy profiles in Chromium." }
+}

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ProxySlack</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main>
+    <header class="top">
+      <div class="brand"><span class="logo">P<span>●</span></span><div><h1>ProxySlack</h1><p data-i18n="tagline"></p></div></div>
+      <div class="top-actions"><button id="settingsBtn" class="settings-button" type="button" aria-label="Settings" title="Settings">⚙</button><span id="statusPill" class="pill"></span></div>
+    </header>
+
+    <section class="hero" aria-labelledby="currentTitle">
+      <div class="eyebrow" data-i18n="activeConnection"></div>
+      <h2 id="currentTitle"></h2>
+      <p id="currentDetail"></p>
+      <div class="hero-actions">
+        <button id="directBtn" class="secondary" type="button" data-i18n="directMode"></button>
+        <button id="releaseBtn" class="ghost" type="button" data-i18n="browserSetting"></button>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="profilesTitle">
+      <div class="section-head"><div><div class="eyebrow" data-i18n="configuration"></div><h2 id="profilesTitle" data-i18n="myProfiles"></h2></div><button id="addBtn" class="add" type="button" data-i18n="newProfileButton"></button></div>
+      <div id="profiles" class="profiles"></div>
+    </section>
+
+    <section class="tools" aria-label="Outils">
+      <button id="testBtn" type="button"><span class="tool-icon">◎</span><span data-i18n="testIp"></span><span class="arrow">↗</span></button>
+      <div id="ipResult" class="ip-result" hidden></div>
+      <div class="tool-row"><button id="importBtn" type="button" data-i18n="importJson"></button><button id="exportBtn" type="button" data-i18n="exportJson"></button></div>
+      <input id="fileInput" type="file" accept="application/json,.json" hidden>
+    </section>
+
+    <p id="notice" class="notice" role="status" aria-live="polite"></p>
+    <footer><span data-i18n="ipCaveat"></span> <a id="guideLink" href="README.en.html" target="_blank" rel="noopener" data-i18n="guide"></a></footer>
+  </main>
+
+  <dialog id="editor">
+    <form id="profileForm">
+      <div class="dialog-head"><div><div class="eyebrow" data-i18n="proxyProfile"></div><h2 id="dialogTitle"></h2></div><button id="closeBtn" type="button" class="close" aria-label="Close">×</button></div>
+      <label><span data-i18n="name"></span><input id="name" maxlength="60" required></label>
+      <label><span data-i18n="proxyType"></span><select id="type"><option value="http">HTTP</option><option value="https">HTTPS</option><option value="socks4">SOCKS4</option><option value="socks5">SOCKS5</option></select></label>
+      <div class="fields"><label><span data-i18n="host"></span><input id="host" required placeholder="127.0.0.1" autocomplete="off"></label><label><span data-i18n="port"></span><input id="port" type="number" min="1" max="65535" required placeholder="9050"></label></div>
+      <label class="checkbox-label"><input id="applyAll" type="checkbox" checked><span data-i18n="applyAll"></span></label>
+      <label id="targetField" hidden><span data-i18n="targetProtocol"></span><select id="targetProtocol"><option value="http">HTTP</option><option value="https">HTTPS</option><option value="ftp">FTP</option><option value="other" data-i18n="otherProtocols"></option></select></label>
+      <p class="hint" data-i18n="proxyHint"></p>
+      <div class="dialog-actions"><button id="cancelBtn" type="button" class="secondary" data-i18n="cancel"></button><button class="primary" type="submit" data-i18n="save"></button></div>
+    </form>
+  </dialog>
+  <dialog id="settingsDialog">
+    <form id="settingsForm">
+      <div class="dialog-head"><div><div class="eyebrow" data-i18n="preferences"></div><h2 data-i18n="settings"></h2></div><button id="settingsCloseBtn" type="button" class="close" aria-label="Close">×</button></div>
+      <label><span data-i18n="language"></span><select id="languageSelect"><option value="auto" data-i18n="followBrowser"></option><option value="en">English</option><option value="fr">Français</option></select></label>
+      <label><span data-i18n="ipTestUrl"></span><input id="ipUrl" type="url" required autocomplete="off" spellcheck="false" placeholder="https://api.ipify.org/?format=json"></label>
+      <p class="hint" data-i18n="ipServiceHint"></p>
+      <p id="settingsNotice" class="notice" role="status" aria-live="polite"></p>
+      <div class="dialog-actions"><button id="resetIpBtn" type="button" class="secondary" data-i18n="resetIp"></button><button class="primary" type="submit" data-i18n="save"></button></div>
+    </form>
+  </dialog>
+  <script src="core.js"></script>
+  <script src="i18n.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
