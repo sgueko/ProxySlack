@@ -4,8 +4,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
 
-function harness(initialLevel = 'controllable_by_this_extension') {
-  const memory = {};
+function harness(initialLevel = 'controllable_by_this_extension', memory = {}) {
   const calls = [];
   let listener;
   let level = initialLevel;
@@ -22,8 +21,8 @@ function harness(initialLevel = 'controllable_by_this_extension') {
     runtime: { onMessage: { addListener(fn) { listener = fn; } }, onInstalled: { addListener() {} }, onStartup: { addListener() {} } }
   };
   const context = vm.createContext({ chrome, crypto: require('node:crypto').webcrypto, console, fetch: async url => { calls.push(['fetch', url]); return new Response(JSON.stringify({ ip:'203.0.113.1' }), { headers:{ 'content-type':'application/json' } }); }, AbortSignal, URL, TextDecoder, Response });
-  context.importScripts = file => vm.runInContext(fs.readFileSync(path.join(__dirname, '..', file), 'utf8'), context);
-  vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'background.js'), 'utf8'), context);
+  context.importScripts = file => vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'extension', file), 'utf8'), context);
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'extension', 'background.js'), 'utf8'), context);
   const send = message => new Promise(resolve => listener(message, {}, resolve)).then(response => { if (!response.ok) throw new Error(response.error); return response.data; });
   return { send, calls, memory, setLevel: next => { level = next; } };
 }
@@ -60,4 +59,26 @@ test('réglages sauvegardés pilotent le service de test IP', async () => {
   assert.equal(result.settings.ipUrl, settings.ipUrl);
   assert.equal((await h.send({ type:'testIp' })).ip, '203.0.113.1');
   assert.ok(h.calls.some(call => call[0] === 'fetch' && call[1] === settings.ipUrl));
+});
+
+
+test('save, edit, restart, update and delete preserve stored profiles', async () => {
+  const memory = {};
+  let h = harness('controllable_by_this_extension', memory);
+  let result = await h.send({ type:'snapshot' });
+  const profile = { id:'local-dev', name:'Local Development Proxy', type:'http', host:'127.0.0.1', port:8888 };
+  result = await h.send({ type:'save', profile });
+  assert.ok(result.profiles.some(p => p.id === 'local-dev'));
+  result = await h.send({ type:'save', profile: { ...profile, port:8889, type:'socks4' } });
+  assert.equal(result.profiles.find(p => p.id === 'local-dev').port, 8889);
+  result = await h.send({ type:'activate', id:'local-dev' });
+  assert.equal(result.selected, 'local-dev');
+  h = harness('controlled_by_this_extension', memory); // fresh service worker, same browser storage
+  result = await h.send({ type:'snapshot' });
+  assert.equal(result.selected, 'local-dev');
+  assert.equal(result.profiles.find(p => p.id === 'local-dev').type, 'socks4');
+  h = harness('controlled_by_this_extension', memory); // extension update retains storage
+  result = await h.send({ type:'remove', id:'local-dev' });
+  assert.equal(result.selected, null);
+  assert.ok(!result.profiles.some(p => p.id === 'local-dev'));
 });

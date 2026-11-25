@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const core = require('../core.js');
+const core = require('../extension/core.js');
 
 test('profils initiaux Tor', () => {
   assert.deepEqual(core.defaults.map(p => [p.type, p.host, p.port]), [['http','127.0.0.1',8118],['socks5','127.0.0.1',9050]]);

@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const core = require('../core.js');
+const core = require('../extension/core.js');
 
 test('IP URL settings accept HTTPS and browser or manual language', () => {
   assert.deepEqual(core.validateSettings({}), { language:'auto', ipUrl:core.defaultIpUrl });

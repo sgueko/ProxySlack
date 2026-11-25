@@ -5,7 +5,7 @@ const vm = require('node:vm');
 const path = require('node:path');
 
 test('English and French have every popup message and localized manifest metadata', () => {
-  const root = path.join(__dirname, '..');
+  const root = path.join(__dirname, '..', 'extension');
   const source = fs.readFileSync(path.join(root, 'i18n.js'), 'utf8');
   const keys = [...fs.readFileSync(path.join(root, 'popup.js'), 'utf8').matchAll(/\bt\('([a-zA-Z]+)'/g)].map(match => match[1]);
   const htmlKeys = [...fs.readFileSync(path.join(root, 'popup.html'), 'utf8').matchAll(/data-i18n="([a-zA-Z]+)"/g)].map(match => match[1]);
