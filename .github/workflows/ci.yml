@@ -1,0 +1,31 @@
+name: CI
+on:
+  push:
+    branches: [main, feature/github-distribution]
+  pull_request:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Manifest and JavaScript syntax
+        run: |
+          python3 -m json.tool extension/manifest.json >/dev/null
+          find extension -name '*.js' -print0 | xargs -0 -n1 node --check
+      - name: Bash syntax and ShellCheck
+        run: |
+          for file in install.sh uninstall.sh update.sh scripts/*.sh; do bash -n "$file"; done
+          shellcheck install.sh uninstall.sh update.sh scripts/*.sh
+      - name: Behavior tests
+        run: node --test tests/*.test.js
+      - name: Distribution tests and ZIP
+        run: |
+          python3 -m unittest discover -s tests -p '*distribution_test.py'
+          ./scripts/package.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ProxySlack-unsigned-zip
+          path: dist/ProxySlack-*.zip

@@ -1,0 +1,15 @@
+dist/*
+!dist/.gitkeep
+*.pem
+*.key
+*.p12
+*.pfx
+*.crx
+*.crx3
+.env
+.env.*
+work/
+node_modules/
+.DS_Store
+__pycache__/
+*.pyc

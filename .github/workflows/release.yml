@@ -1,0 +1,48 @@
+name: Release
+on:
+  push:
+    tags: ['v*.*.*']
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate tag and source
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          test "$TAG" = "v$(cat VERSION)"
+          python3 -m json.tool extension/manifest.json >/dev/null
+          for file in install.sh uninstall.sh update.sh scripts/*.sh; do bash -n "$file"; done
+          shellcheck install.sh uninstall.sh update.sh scripts/*.sh
+          node --test tests/*.test.js
+          python3 -m unittest discover -s tests -p '*distribution_test.py'
+      - name: Restore signing key
+        env:
+          KEY_B64: ${{ secrets.PROXYSLACK_SIGNING_KEY_B64 }}
+        run: |
+          test -n "$KEY_B64" || { echo 'Missing signing-key secret' >&2; exit 1; }
+          umask 077
+          printf '%s' "$KEY_B64" | base64 --decode > "$RUNNER_TEMP/proxyslack.pem"
+          test "$(stat -c %a "$RUNNER_TEMP/proxyslack.pem")" = 600
+      - name: Sign and build release metadata
+        env:
+          PROXYSLACK_KEY_PATH: ${{ runner.temp }}/proxyslack.pem
+        run: |
+          ./scripts/sign.sh
+          ./scripts/release.sh
+          (cd dist && sha256sum -c SHA256SUMS)
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$TAG" dist/ProxySlack-*.zip dist/ProxySlack-*.crx dist/update.xml dist/SHA256SUMS --title "ProxySlack $TAG" --notes-file CHANGELOG.md --verify-tag
+      - name: Remove signing key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/proxyslack.pem"

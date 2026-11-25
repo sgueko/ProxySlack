@@ -1,0 +1,24 @@
+name: Bug report
+description: Report a reproducible ProxySlack problem
+body:
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: Linux distribution or operating system
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Do not include real IP addresses, credentials, or private proxy details.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behavior
