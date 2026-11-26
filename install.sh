@@ -36,7 +36,11 @@ fi
 if [[ $version != latest || $dry_run != true ]]; then
   [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?$ ]] || { echo 'Invalid version.' >&2; exit 2; }
 fi
-[[ -f /etc/os-release ]] && . /etc/os-release
+if [[ -f /etc/os-release ]]; then
+  # The distribution supplies this file at runtime; CI does not analyze its contents.
+  # shellcheck disable=SC1091
+  . /etc/os-release
+fi
 printf 'Distribution: %s\n' "${PRETTY_NAME:-Linux}"
 if [[ -z $browser ]]; then
   available=()
@@ -51,9 +55,9 @@ if [[ -z $browser ]]; then
   else echo 'Multiple browsers found; use --browser.' >&2; exit 2; fi
 fi
 case $browser in
-  chromium) binary=chromium; metadata=/usr/share/chromium/extensions;;
-  chrome) binary=google-chrome; metadata=/usr/share/google-chrome/extensions;;
-  edge) binary=microsoft-edge; metadata=/usr/share/microsoft-edge/extensions;;
+  chromium) metadata=/usr/share/chromium/extensions;;
+  chrome) metadata=/usr/share/google-chrome/extensions;;
+  edge) metadata=/usr/share/microsoft-edge/extensions;;
   brave|vivaldi)
     echo "$browser detected. Its Linux external-extension directory is not verified here; no installation was changed." >&2
     echo 'Use the documented unpacked method or contribute a verified external directory.' >&2; exit 3;;
@@ -65,7 +69,7 @@ case $browser in
   edge) candidates=(microsoft-edge microsoft-edge-stable);;
 esac
 found=false
-for candidate in "${candidates[@]}"; do if command -v "$candidate" >/dev/null; then binary=$candidate; found=true; break; fi; done
+for candidate in "${candidates[@]}"; do if command -v "$candidate" >/dev/null; then found=true; break; fi; done
 $found || { echo "$browser is not installed." >&2; exit 1; }
 if [[ -n $test_root ]]; then
   [[ $test_root == /tmp/* && $test_root != *..* ]] || { echo '--test-root must be a path below /tmp.' >&2; exit 2; }
@@ -77,12 +81,18 @@ if $dry_run; then
   printf 'Source: %s\n' "$(if $local_mode; then echo "$root/dist/$crx_name"; else echo "GitHub Releases v$version"; fi)"
   exit 0
 fi
-command -v openssl >/dev/null && command -v python3 >/dev/null || { echo 'OpenSSL and Python 3 are required for CRX verification.' >&2; exit 1; }
+if ! command -v openssl >/dev/null || ! command -v python3 >/dev/null; then
+  echo 'OpenSSL and Python 3 are required for CRX verification.' >&2
+  exit 1
+fi
 if $local_mode; then
   crx="$root/dist/$crx_name"
   [[ -f $crx ]] || { echo "Missing $crx; run scripts/sign.sh." >&2; exit 1; }
 else
-  command -v curl >/dev/null && command -v sha256sum >/dev/null || { echo 'curl and sha256sum are required.' >&2; exit 1; }
+  if ! command -v curl >/dev/null || ! command -v sha256sum >/dev/null; then
+    echo 'curl and sha256sum are required.' >&2
+    exit 1
+  fi
   temp=$(mktemp -d)
   trap 'rm -rf -- "$temp"' EXIT
   base="https://github.com/sgueko/ProxySlack/releases/download/v$version"
