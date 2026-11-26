@@ -1,4 +1,4 @@
-# Test report — ProxySlack 1.2.0
+# Test report — ProxySlack
 
 Date: 2026-11-25. Environment: Slackware Linux, Chromium 158.0.8127.36, Node 24.22.3, Python 3 and OpenSSL.
 
@@ -25,3 +25,7 @@ The screenshots do not demonstrate live proxy reachability or anonymity. The loc
 - Chromium installer: remote and local `--dry-run` passed; signed `--local` install/uninstall passed in an isolated `/tmp` root.
 - GitHub Actions workflows: `actionlint` 1.7.12 passed with ShellCheck enabled. The release build, CRX3 verification and all SHA-256 checks passed locally.
 - Signing-key hash, extension ID and existing `v1.2.0` tag were unchanged. No GitHub workflow was run remotely during this correction.
+
+## Release repair — 2026-11-26
+
+The `v1.2.1` tag pointed to a commit containing `VERSION=1.2.0` and Manifest version `1.2.0`; the Release job failed at its first tag/version equality check. Version `1.2.2` now matches `VERSION`, the Manifest, `update.xml`, and the signed CRX/ZIP names. The exact Release validation commands, ShellCheck 0.10.0, actionlint, JavaScript tests (four files), Python distribution tests (four), CRX signature and SHA-256 checks passed locally. Local dry-run and isolated signed installation/uninstallation also passed. The private key, extension ID and old tags were unchanged. Publication and GitHub secret availability are not locally verifiable.

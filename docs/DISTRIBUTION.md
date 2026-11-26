@@ -1,11 +1,11 @@
 # Distribution and first release
 
-The intended repository is `https://github.com/sgueko/ProxySlack`. It does not exist yet. No remote publication has been performed.
+The repository is `https://github.com/sgueko/ProxySlack`. The existing `v1.2.0` and `v1.2.1` tags remain unchanged. The next corrected release is `v1.2.2`; no Release asset has been published by this local repair.
 
 1. Review the source, screenshots and test report. Store the signing key securely outside Git and back it up. Set `PROXYSLACK_KEY_PATH` to it.
-2. Run `PROXYSLACK_KEY_PATH=/secure/path/proxyslack.pem ./scripts/sign.sh` and `./scripts/release.sh`; confirm `python3 scripts/crx3.py verify --crx dist/ProxySlack-1.2.0.crx` prints the ID in `EXTENSION_ID`.
-3. Create the public repository on GitHub, then push the reviewed `main` branch. Add repository secret `PROXYSLACK_SIGNING_KEY_B64` containing base64 of the exact PEM key, with no line wrapping. The release workflow reads it without logging it.
-4. Tag the release only after approval: `git tag v1.2.0 && git push origin main v1.2.0`. GitHub Actions validates, signs and publishes release assets. Confirm the released `update.xml` links to the versioned CRX and that both files are accessible.
+2. Run `PROXYSLACK_KEY_PATH=/secure/path/proxyslack.pem ./scripts/sign.sh` and `./scripts/release.sh`; confirm `python3 scripts/crx3.py verify --crx dist/ProxySlack-1.2.2.crx` prints the ID in `EXTENSION_ID`.
+3. Ensure repository secret `PROXYSLACK_SIGNING_KEY_B64` contains base64 of the exact PEM key, with no line wrapping. The release workflow reads it without logging it.
+4. Push the reviewed `main` branch and check CI. Tag the corrected release only after approval: `git tag v1.2.2 && git push origin main v1.2.2`. GitHub Actions validates, signs and publishes release assets. Confirm the released `update.xml` links to the versioned CRX and that both files are accessible.
 5. On Slackware, test `./install.sh --browser chromium`, accept the browser's external-install prompt if shown, restart Chromium, and verify the installed extension ID. Check browser-managed updates with a later test version before promising automatic updates.
 
 `update.xml` and the manifest's `update_url` use GitHub Releases. Chrome's self-hosting rules require the CRX to be served correctly; GitHub's asset MIME behavior and browser update checks are not yet validated. If that route fails, use a dedicated HTTPS host that serves CRX with `application/x-chrome-extension`, and update the manifest/feed URL in a new signed release. Do not change the signing key.
